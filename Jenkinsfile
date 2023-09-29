@@ -1,44 +1,53 @@
+pipeline {
 
-node {
-  
-  def image
-  def mvnHome = tool 'Maven3'
-
-  
-     stage ('checkout') {
-        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '9ffd4ee4-3647-4a7d-a357-5e8746463282', url: 'https://bitbucket.org/ananthkannan/myawesomeangularapprepo/']]])       
-        }
-    
-    
-    stage ('Build') {
-            sh 'mvn -f MyAwesomeApp/pom.xml clean install'            
-        }
-        
-    stage ('archive') {
-            archiveArtifacts '**/*.jar'
-        }
-        
-    stage ('Docker Build') {
-         // Build and push image with Jenkins' docker-plugin
-        withDockerServer([uri: "tcp://localhost:4243"]) {
-
-            withDockerRegistry([credentialsId: "fa32f95a-2d3e-4c7b-8f34-11bcc0191d70", url: "https://index.docker.io/v1/"]) {
-            image = docker.build("ananthkannan/mywebapp", "MyAwesomeApp")
-            image.push()
-            
-            }
+    agent {
+        docker {
+            image 'midebell/dev-tools:v2'
         }
     }
+
+    environment {
+        registry = "614292846436.dkr.ecr.us-east-1.amazonaws.com/midebell"
+        registryCredential = 'was'
+        dockerImage = ''
+    }
     
-       stage('docker stop container') {
-            sh 'docker ps -f name=myContainer -q | xargs --no-run-if-empty docker container stop'
-            sh 'docker container ls -a -fname=myContainer -q | xargs -r docker container rm'
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'Jenkins-gitlab', url: 'https://git.lumiefy.com/jenkins/springboot-app.git']])
+            }
+        }
+        
+        stage ("build Jar") {
+            steps {
+                sh "mvn clean install"
+            }
+        }
 
-       }
+        stage ("Build image") {
+            steps {
+                script {
+                    dockerImage = docker.build registry
+                }
+            }
+        }
+        stage('Deploy image') {
+            steps{
+                script{
+                    docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
 
-    stage ('Docker run') {
+        stage ("Deploy to K8S") {
+            steps {
+                sh "kubectl --version"    
+            }
+        }
 
-        image.run("-p 8085:8085 --rm --name myContainer")
-
+        
     }
 }
