@@ -8,6 +8,8 @@ pipeline {
 
     environment {
         registry = "411317891806.dkr.ecr.us-east-1.amazonaws.com/chijiokerepo"
+        registryCredential = 'was'
+        dockerImage = ''
     }
     
     stages {
@@ -23,20 +25,21 @@ pipeline {
             }
         }
         
+
         stage ("Build image") {
             steps {
                 script {
-                    docker.build registry
+                    dockerImage = docker.build registry
                 }
             }
         }
-        
-        stage ("Push to ECR") {
-            steps {
-                withAWS(credentials: 'aws', region: 'us-east-1') {
-                    sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 411317891806.dkr.ecr.us-east-1.amazonaws.com"
-                    sh "docker push 411317891806.dkr.ecr.us-east-1.amazonaws.com/chijiokerepo:latest"
-                }      
+        stage('Deploy image') {
+            steps{
+                script{
+                    docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
+                        dockerImage.push()
+                    }
+                }
             }
         }
         
