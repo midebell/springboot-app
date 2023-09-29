@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         registry = "411317891806.dkr.ecr.us-east-1.amazonaws.com/chijiokerepo"
-        registryCredential = 'was'
+        registryCredential = 'aws'
         dockerImage = ''
     }
     
