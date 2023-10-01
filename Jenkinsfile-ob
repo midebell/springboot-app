@@ -4,7 +4,7 @@ pipeline {
       maven 'maven'
     }
     environment {
-        registry = "411317891806.dkr.ecr.us-east-1.amazonaws.com/chijiokerepo"
+        registry = "614292846436.dkr.ecr.us-east-1.amazonaws.com/midebell"
         registryCredential = 'aws'
         dockerImage = ''
     }
@@ -25,22 +25,23 @@ pipeline {
         }
         
 
-           stage ("Build image") {
-              steps {
-                  script {
-                     dockerImage = docker.build registry
-                  }
-              }
-          }
-        // stage('Deploy image') {
-        //     steps{
-        //         script{
-        //             docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
-        //                 dockerImage.push()
-        //             }
-        //         }
-        //     }
-        // }
+        stage ("Build image") {
+            steps {
+                script {
+                    docker.build registry
+                }
+            }
+        }
+        stage ("Push to ECR") {
+            steps {
+                withAWS (credentials: 'aws', region: 'us-east-1') {
+                    sh """ 
+                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 614292846436.dkr.ecr.us-east-1.amazonaws.com
+                        docker push 614292846436.dkr.ecr.us-east-1.amazonaws.com.amazonaws.com/midebell:latest
+                    """
+                }
+            }
+        }
         
         // stage ("Deploy to K8S") {
         //     steps {
