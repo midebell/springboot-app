@@ -37,7 +37,7 @@ pipeline {
                 withAWS (credentials: 'aws', region: 'us-east-1') {
                     sh """ 
                         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 614292846436.dkr.ecr.us-east-1.amazonaws.com
-                        docker push 614292846436.dkr.ecr.us-east-1.amazonaws.com.amazonaws.com/midebell:latest
+                        docker push 614292846436.dkr.ecr.us-east-1.amazonaws.com/midebell:latest
                     """
                 }
             }
