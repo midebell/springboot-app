@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+      maven 'maven'
+    }
     environment {
         registry = "411317891806.dkr.ecr.us-east-1.amazonaws.com/chijiokerepo"
         registryCredential = 'aws'
