@@ -19,20 +19,19 @@ pipeline {
         stage ("build Jar") {
             steps {
                 sh """
-                mvn --version
                 mvn clean install
                 """
             }
         }
         
 
-        // stage ("Build image") {
-        //     steps {
-        //         script {
-        //             dockerImage = docker.build registry
-        //         }
-        //     }
-        // }
+           stage ("Build image") {
+              steps {
+                  script {
+                     dockerImage = docker.build registry
+                  }
+              }
+          }
         // stage('Deploy image') {
         //     steps{
         //         script{
