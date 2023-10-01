@@ -19,6 +19,7 @@ pipeline {
         stage ("build Jar") {
             steps {
                 sh """
+                mvn --version
                 mvn clean install
                 """
             }
