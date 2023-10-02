@@ -52,5 +52,6 @@ pipeline {
         //         }
         //     }
         // }
+aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION_NAME
     }
 }
